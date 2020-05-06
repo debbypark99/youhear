@@ -14,4 +14,7 @@ kinetic typographic subtitle for people with hearing loss
     git commit -m "<commit에 대충 설명하는 메세지>"
     git push -u origin <branch name> (일단은 master에 올리면 될 듯)
     
+## Local 저장소를 여기 꺼로 update 시키는 법
+
+    git pull origin <branch name> (일단 master)
     
