@@ -17,8 +17,8 @@ kinetic typographic subtitle for people with hearing loss
 ## Local 저장소를 여기 꺼로 update 시키는 법
 
     git pull origin <branch name> (일단 master)
-    * 파일을 업로드 하기 전에 pull하는 것을 추천함.
+    * 파일을 업로드 하기 전에 pull하는 것을 추천함!
     
 ## 코드를 수정할 때
-> * 수정할 내용이 많다면, local에서 pycharm으로 open해서 수정한 다음 add, commit, push
-> * 수정할 내용이 적다면, github에서 연필아이콘 눌러서 직접 수정한 다음 pull해서 확인해도 무방
+* 수정할 내용이 많다면, local에서 pycharm으로 open해서 수정한 다음 add, commit, push
+* 수정할 내용이 적다면, github에서 연필아이콘 눌러서 직접 수정한 다음 pull해서 확인해도 무방
