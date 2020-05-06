@@ -5,7 +5,10 @@ import dlib
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image
 
-cap = cv2.VideoCapture('input_video/fauci_5s.mp4')  # input video
+inputfile_name = fauci_5s.mp4
+outputfile_name = fauci_5s_output.avi
+
+cap = cv2.VideoCapture('input_video/inputfile_name')  # input video
 detector = dlib.get_frontal_face_detector()  # frontal face detecting
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')  # face landmark data file
 profile_cascade = cv2.CascadeClassifier('haarcascade_profileface.xml')  # left-side face detecting
@@ -17,8 +20,8 @@ if (cap.isOpened() == False):
 frame_width = int(cap.get(3))
 frame_height = int(cap.get(4))
 
-out = cv2.VideoWriter('output_video/fauci_5s_output.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (frame_width, frame_height))
-clip = VideoFileClip("input_video/fauci_5s.mp4")
+out = cv2.VideoWriter('output_video/outputfile_name', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (frame_width, frame_height))
+clip = VideoFileClip("input_video/inputfile_name")
 clip.audio.write_audiofile("audio.wav")
 sound = "audio.wav"
 r = sr.Recognizer()
