@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import dlib
 
-cap = cv2.VideoCapture('input_video/fauci_5s.mp4')  # input video
+cap = cv2.VideoCapture('.../input_video/fauci_5s.mp4')  # input video
 detector = dlib.get_frontal_face_detector()  # frontal face detecting
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')  # face landmark data file
 profile_cascade = cv2.CascadeClassifier('haarcascade_profileface.xml')  # left-side face detecting
