@@ -1,6 +1,5 @@
 # youhear
 kinetic typographic subtitle for people with hearing loss
-
 ##사용법
 
     1. 이거 다운받을 폴더를 하나 만들어준다.
