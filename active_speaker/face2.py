@@ -14,7 +14,7 @@ if (cap.isOpened() == False):
 frame_width = int(cap.get(3))
 frame_height = int(cap.get(4))
 
-out = cv2.VideoWriter('output_video/outpy.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (frame_width, frame_height))
+out = cv2.VideoWriter('../output_video/outpy.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (frame_width, frame_height))
 
 class myFace:  # class for saving information of faces
     mouth_distance = 0  # 윗입술과 아랫입술 사이의 거리 / 미간과 턱 사이의 길이
