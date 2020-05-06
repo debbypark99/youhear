@@ -17,4 +17,4 @@ kinetic typographic subtitle for people with hearing loss
 ## Local 저장소를 여기 꺼로 update 시키는 법
 
     git pull origin <branch name> (일단 master)
-    
+    > 파일을 업로드 하기 전에 pull하는 것을 추천함.
