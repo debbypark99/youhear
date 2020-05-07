@@ -5,7 +5,7 @@ from PIL import ImageFont, ImageDraw, Image
 
 # Create a VideoCapture object
 
-cap = cv2.VideoCapture('input_video/fauci_5s.mp4')
+cap = cv2.VideoCapture('../input_video/fauci_5s.mp4')
 
 # Check if camera opened successfully
 
@@ -21,12 +21,12 @@ frame_height = int(cap.get(4))
 
 # Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
 
-out = cv2.VideoWriter('output_video/outpy.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (frame_width, frame_height))
+out = cv2.VideoWriter('../output_video/outpy.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (frame_width, frame_height))
 
 while (True):
 
     ret, frame = cap.read()
-    set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 50)
+    set_font = ImageFont.truetype("../fonts/BMYEONSUNG.ttf", 50)
     img_pil = Image.fromarray(frame)
     draw = ImageDraw.Draw(img_pil)
 
