@@ -76,6 +76,7 @@ while True:
             if abs(numface[m].mouth_distance - numface[m].mouth_distance_previous) <= 3:
                 numface[m].x_coordinate = None
                 numface[m].y_coordinate = None
+                frame_x_y.insert(frame_number, (None, None))
 
             maxi = 0
             for i in range(0, len(numface)):
@@ -108,6 +109,7 @@ while True:
             else:
                 numface[m].x_coordinate = None
                 numface[m].y_coordinate = None
+                frame_x_y.insert(frame_number, (None, None))
 
             for outline in range(9, 17):
                 numface[m].face_outline += landmarks.part(outline).x
@@ -116,6 +118,7 @@ while True:
             if abs(numface[m].face_outline - numface[m].face_outline_previous) > 10:
                 numface[m].x_coordinate = None
                 numface[m].x_coordinate = None
+                frame_x_y.insert(frame_number, (None, None))
 
             numface[m].face_outline_previous = numface[m].face_outline
             numface[m].mouth_distance_previous = numface[m].mouth_distance  # update mouth_distance_previous
