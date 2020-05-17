@@ -1,55 +1,57 @@
 import cv2
 import numpy as np
 from face_integ import active_speaker
+from audio_integ import audio_analysis_main
 from PIL import ImageFont, ImageDraw, Image
 
-capitalize = True
+db_big = 3
+db_verybig = 5
 
-loc = []
-word_lst = []
+loc = active_speaker()
+audio_lst = audio_analysis_main()
 count = 0
+total_duration = 0
 t = ""
 
-class info:
-    text = ""
-    dB = 0
-    freq = 0
-    #sentence = 0
-    s_time = None
-    e_time = None
+#class info:
+#    text = ""
+#    dBfs = 0
+#    freq_s = 0
+#    freq_e = 0
+#    #sentence = 0
+#    s_time = None
+#    e_time = None
 
-#loc = active_speaker()
+#for i in range(0,3):
+#    inf = info()
+#    word_lst.insert(i, inf)
 
-for i in range(0,3):
-    inf = info()
-    word_lst.insert(i, inf)
+#for i in range(0, 150):
+#    loc.append((100,200))
 
-for i in range(0, 150):
-    loc.append((100,200))
-
-word_lst[0].text = "I "
-word_lst[1].text = "ate "
-word_lst[2].text = "apple "
-word_lst[0].dB = 3
-word_lst[1].dB = 3
-word_lst[2].dB = 3
-word_lst[0].freq = 3
-word_lst[1].freq = 5
-word_lst[2].freq = 3
+#word_lst[0].text = "I "
+#word_lst[1].text = "ate "
+#word_lst[2].text = "apple "
+#word_lst[0].dB = 3
+#word_lst[1].dB = 3
+#word_lst[2].dB = 3
+#word_lst[0].freq = 3
+#word_lst[1].freq = 5
+#word_lst[2].freq = 3
 #word_lst[0].sentence = 0
 #word_lst[1].sentence = 1
 #word_lst[2].sentence = 2
-word_lst[0].s_time = 0
-word_lst[0].e_time = 30
-word_lst[1].s_time = 30
-word_lst[1].e_time = 90
-word_lst[2].s_time = 90
-word_lst[2].e_time = 150
+#word_lst[0].s_time = 0
+#word_lst[0].e_time = 30
+#word_lst[1].s_time = 30
+#word_lst[1].e_time = 90
+#word_lst[2].s_time = 90
+#word_lst[2].e_time = 150
 
 
 # Create a VideoCapture object
 
-cap = cv2.VideoCapture('input_video/fauci_5s.mp4')
+cap = cv2.VideoCapture('input_video/bigbang.mp4')
 
 # Check if camera opened successfully
 
@@ -65,7 +67,7 @@ frame_height = int(cap.get(4))
 
 # Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
 
-out = cv2.VideoWriter('output_video/apple.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30,
+out = cv2.VideoWriter('output_video/bigbang.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30,
                       (frame_width, frame_height))
 
 while (True):
@@ -75,24 +77,31 @@ while (True):
     draw = ImageDraw.Draw(img_pil)
 
     if ret == True:
+        for segment in audio_lst:
+            for i in range(0, len(segment.word_lst)):
+                for k in range(0, i):
+                    for l in range(0, len(segment.word_lst[k].text)):
+                        t += "  "
+                if total_duration + segment.word_lst[i].start_time <= count:
+                    t = t + segment.word_lst[i].text
+                    #if word_lst[i].freq > word_lst[i-1].freq + 1:
+                    #    t = t + "↗"
+                    #if word_lst[i].freq < word_lst[i-1].freq - 1:
+                    #    t = t + "↘"
+                    if segment.word_lst[i].dbfs > db_verybig:
+                        t = t + "↑↑↑"
+                        set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 50)
+                        draw.text(loc[segment.word_lst[i].start_time], t.upper(), font=set_font, fill=(255, 255, 255, 0))
+                    elif segment.word_lst[i].dbfs > db_big:
+                        t = t + "↑↑"
+                        set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 40)
+                        draw.text(loc[segment.word_lst[i].start_time], t, font=set_font, fill=(255, 255, 255, 0))
+                    else:
+                        set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 30)
+                        draw.text(loc[segment.word_lst[i].start_time], t, font=set_font, fill=(255, 255, 255, 0))
+                t = ""
+            total_duration += segment.duration
 
-        for i in range(0, len(word_lst)):
-            for k in range(0, i):
-                for l in range(0, len(word_lst[k].text)):
-                    t += "  "
-            if word_lst[i].s_time <= count:
-                t = t + word_lst[i].text
-                set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", word_lst[i].dB * 10)
-                if word_lst[i].freq > word_lst[i-1].freq + 1:
-                    t = t + "↗"
-                if word_lst[i].freq < word_lst[i-1].freq - 1:
-                    t = t + "↘"
-                if capitalize == True and word_lst[i].dB > 4:
-                    t = t + "↑↑↑"
-                    draw.text(loc[word_lst[i].s_time], t.upper(), font=set_font, fill=(255, 255, 255, 0))
-                else:
-                    draw.text(loc[word_lst[i].s_time], t, font=set_font, fill=(255, 255, 255, 0))
-            t = ""
 
 
         image = np.array(img_pil)
