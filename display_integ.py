@@ -6,6 +6,7 @@ from PIL import ImageFont, ImageDraw, Image
 
 db_big = 3
 db_verybig = 5
+freq_gap = 10
 
 loc = active_speaker()
 audio_lst = audio_analysis_main()
@@ -67,7 +68,7 @@ frame_height = int(cap.get(4))
 
 # Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
 
-out = cv2.VideoWriter('output_video/bigbang.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30,
+out = cv2.VideoWriter('output_video/bigbang_5s.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30,
                       (frame_width, frame_height))
 
 while (True):
@@ -78,12 +79,13 @@ while (True):
 
     if ret == True:
         for segment in audio_lst:
+            seg_loc = loc[int(total_duration + (segment.word_lst[i].start_time)*0.03)]
             for i in range(0, len(segment.word_lst)):
-                for k in range(0, i):
-                    for l in range(0, len(segment.word_lst[k].text)):
-                        t += "  "
-                if total_duration + segment.word_lst[i].start_time <= count:
-                    t = t + segment.word_lst[i].text
+                #for k in range(0, i):
+                #    for l in range(0, len(segment.word_lst[k].text)):
+                #        t += "  "
+                if total_duration + segment.word_lst[i].start_time*0.03 <= count:
+                    t = segment.word_lst[i].text
                     #if word_lst[i].freq > word_lst[i-1].freq + 1:
                     #    t = t + "↗"
                     #if word_lst[i].freq < word_lst[i-1].freq - 1:
@@ -91,16 +93,29 @@ while (True):
                     if segment.word_lst[i].dbfs > db_verybig:
                         t = t + "↑↑↑"
                         set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 50)
-                        draw.text(loc[segment.word_lst[i].start_time], t.upper(), font=set_font, fill=(255, 255, 255, 0))
+                        t = t.upper()
                     elif segment.word_lst[i].dbfs > db_big:
                         t = t + "↑↑"
                         set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 40)
-                        draw.text(loc[segment.word_lst[i].start_time], t, font=set_font, fill=(255, 255, 255, 0))
                     else:
                         set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 30)
-                        draw.text(loc[segment.word_lst[i].start_time], t, font=set_font, fill=(255, 255, 255, 0))
-                t = ""
-            total_duration += segment.duration
+                        
+                    if (segment.word_lst[i].freq_s - segment.word_lst[i].freq_e) < -1 * freq_gap:
+                        for num in range(0,len(segment.word_lst[i].text)):
+                            seg_loc[0] += 3
+                            seg_loc[1] -= 3
+                            draw.text(seg_loc, t[num], font=set_font, fill=(255, 255, 255, 0))
+                    elif (segment.word_lst[i].freq_s - segment.word_lst[i].freq_e) < freq_gap:
+                        for num in range(0,len(segment.word_lst[i].text)):
+                            seg_loc[0] += 3
+                            draw.text(seg_loc, t[num], font=set_font, fill=(255, 255, 255, 0))
+                    else:
+                        for num in range(0,len(segment.word_lst[i].text)):
+                            seg_loc[0] += 3
+                            seg_loc[1] += 3
+                            draw.text(seg_loc, t[num], font=set_font, fill=(255, 255, 255, 0))
+                    
+            total_duration += (segment.duration)*0.03
 
 
 
