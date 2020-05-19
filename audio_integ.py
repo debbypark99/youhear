@@ -13,17 +13,14 @@ from google.cloud import speech_v1
 # [Upload file to bucket]
 from google.cloud import storage
 
-# [input video]
-inputfile_name = "bigbang.mp4"
-
 # [speech recognizer]
 #r = sr.Recognizer()
-
+total_duration = 0
 # [audio segment class - duration, list of words]
 class AudioClass:
     def __init__(self, duration):
         self.duration = duration
-        self.word_list = []
+        self.word_lst = []
 
 # [audio segment class - text, st, et, db, freq]
 class WordClass:
@@ -163,8 +160,9 @@ def audio_analyze_word(out_file, word_list, sr):
 
 def audio_analyze_sliced(out_file, i):
     y, sr = librosa.load(out_file)
-    duration = librosa.get_duration(y=y, sr=sr)
-
+    duration = librosa.get_duration(y=y, sr=sr) * 1000
+    global total_duration
+    total_duration += duration
     seg = AudioClass(duration)
 
     # word time stamps
@@ -180,7 +178,8 @@ def audio_analyze_sliced(out_file, i):
     word_list = sample_long_running_recognize(args.storage_uri)
 
     #analyze words - dB
-    seg.word_list = audio_analyze_word(out_file, word_list , sr)
+    seg.word_lst = audio_analyze_word(out_file, word_list, sr)
+    print(seg.word_lst)
     """for w in word_list:
         print("text: ", w.text)
         print("start_time: ", w.start_time)
@@ -192,14 +191,14 @@ def audio_analyze_sliced(out_file, i):
     """
     return seg
 
-def main():
+def audio_analysis_main(inputfile_name):
     #video_to_audio
     clip = mp.VideoFileClip(inputfile_name)
     clip.audio.write_audiofile("audio.wav")
 
     # audio_chunk
     sound_file = AudioSegment.from_wav("audio.wav")
-    audio_chunks = split_on_silence(sound_file, min_silence_len=600, silence_thresh=-30, keep_silence=700) # oh hi hi hi -> 400, -30, 400
+    audio_chunks = split_on_silence(sound_file, min_silence_len=200, silence_thresh=-20, keep_silence=300) # oh hi hi hi -> 400, -30, 400
 
     audio_list = []
 
@@ -211,9 +210,6 @@ def main():
 
         audio_list.append(audio_analyze_sliced(out_file, i))
 
-
-
-
-
-if __name__ == "__main__":
-    main()
+    global total_duration
+    print(total_duration)
+    return audio_list
