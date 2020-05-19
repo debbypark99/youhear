@@ -1,15 +1,29 @@
 import cv2
 import numpy as np
+from moviepy.audio.io.AudioFileClip import AudioFileClip
+from moviepy.video.io.VideoFileClip import VideoFileClip
+
 from face_integ import active_speaker
-from audio_integ import audio_analysis_main
+import audio_integ
 from PIL import ImageFont, ImageDraw, Image
 
-db_big = 3
-db_verybig = 5
-freq_gap = 10
 
-loc = active_speaker()
-audio_lst = audio_analysis_main()
+# [input video]
+inputfile_name = 'input_video/bigbang.mp4'
+
+db_big = -18
+db_verybig = -13
+freq_gap = 12000
+
+audio_lst = audio_integ.audio_analysis_main(inputfile_name)
+loc = active_speaker(inputfile_name)
+print(len(loc))
+loc.append((0, 0))
+loc.append((0, 0))
+loc.append((0, 0))
+loc.append((0, 0))
+loc.append((0, 0))
+
 count = 0
 total_duration = 0
 t = ""
@@ -52,7 +66,7 @@ t = ""
 
 # Create a VideoCapture object
 
-cap = cv2.VideoCapture('input_video/bigbang.mp4')
+cap = cv2.VideoCapture(inputfile_name)
 
 # Check if camera opened successfully
 
@@ -68,23 +82,37 @@ frame_height = int(cap.get(4))
 
 # Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
 
-out = cv2.VideoWriter('output_video/bigbang_5s.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30,
+out = cv2.VideoWriter('output_video/bigbang_demo.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30,
                       (frame_width, frame_height))
 
 while (True):
-
     ret, frame = cap.read()
-    img_pil = Image.fromarray(frame)
-    draw = ImageDraw.Draw(img_pil)
-
     if ret == True:
+        total_duration = 0
+        img_pil = Image.fromarray(frame)
+        draw = ImageDraw.Draw(img_pil)
+        print("len(audio_lst)", len(audio_lst))
         for segment in audio_lst:
-            seg_loc = loc[int(total_duration + (segment.word_lst[i].start_time)*0.03)]
+            print("check")
+            print(segment)
+            print(segment.duration)
+            print(segment.word_lst)
+            #print(len(segment.word_lst))
+            if len(segment.word_lst) == 0:
+                total_duration += (segment.duration) * 0.03
+                continue
+            if total_duration + segment.word_lst[-1].end_time * 0.03 < count:
+                total_duration += (segment.duration) * 0.03
+                continue
+            print(int(total_duration + (segment.word_lst[0].start_time) * 0.03))
+            seg_loc = loc[int(total_duration + (segment.word_lst[0].start_time)*0.03) + 15]
+            x, y = seg_loc
             for i in range(0, len(segment.word_lst)):
+                #print("word_check")
                 #for k in range(0, i):
                 #    for l in range(0, len(segment.word_lst[k].text)):
                 #        t += "  "
-                if total_duration + segment.word_lst[i].start_time*0.03 <= count:
+                if total_duration + ((segment.word_lst[i].start_time + segment.word_lst[i].end_time)//2)*0.03 <= count:
                     t = segment.word_lst[i].text
                     #if word_lst[i].freq > word_lst[i-1].freq + 1:
                     #    t = t + "↗"
@@ -99,23 +127,33 @@ while (True):
                         set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 40)
                     else:
                         set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 30)
-                        
+
                     if (segment.word_lst[i].freq_s - segment.word_lst[i].freq_e) < -1 * freq_gap:
-                        for num in range(0,len(segment.word_lst[i].text)):
-                            seg_loc[0] += 3
-                            seg_loc[1] -= 3
-                            draw.text(seg_loc, t[num], font=set_font, fill=(255, 255, 255, 0))
+                        for num in range(0, len(segment.word_lst[i].text)):
+                            x += 20
+                            y -= 5
+                            if frame_width - 40 <= x:
+                                x -= 50
+                                y -= 20
+                            draw.text((x, y), t[num], font=set_font, fill=(255, 255, 255, 0))
                     elif (segment.word_lst[i].freq_s - segment.word_lst[i].freq_e) < freq_gap:
-                        for num in range(0,len(segment.word_lst[i].text)):
-                            seg_loc[0] += 3
-                            draw.text(seg_loc, t[num], font=set_font, fill=(255, 255, 255, 0))
+                        for num in range(0, len(segment.word_lst[i].text)):
+                            x += 20
+                            if frame_width - 40 <= x:
+                                x -= 50
+                                y -= 20
+                            draw.text((x, y), t[num], font=set_font, fill=(255, 255, 255, 0))
                     else:
-                        for num in range(0,len(segment.word_lst[i].text)):
-                            seg_loc[0] += 3
-                            seg_loc[1] += 3
-                            draw.text(seg_loc, t[num], font=set_font, fill=(255, 255, 255, 0))
-                    
-            total_duration += (segment.duration)*0.03
+                        for num in range(0, len(segment.word_lst[i].text)):
+                            x += 20
+                            y += 5
+                            if frame_width - 40 <= x:
+                                x -= 50
+                                y -= 20
+                            draw.text((x, y), t[num], font=set_font, fill=(255, 255, 255, 0))
+                    x += 30
+            total_duration += segment.duration * 0.03
+            print("total duration: ", total_duration)
 
 
 
@@ -129,16 +167,22 @@ while (True):
         # Press Q on keyboard to stop recording
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
+        count += 1
     # Break the loop
     else:
         break
 
-    count += 1
+
+
+
 
 # When everything done, release the video capture and video write objects
 cap.release()
 out.release()
+
+videoclip = VideoFileClip('output_video/bigbang_demo.avi').subclip()
+videoclip.audio = AudioFileClip("audio.wav")
+videoclip.write_videofile("output_video/INTEGRATED_VIDEO.mp4")
 
 # Closes all the frames
 cv2.destroyAllWindows()
