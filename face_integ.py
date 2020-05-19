@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import dlib
 
-def active_speaker():
-    cap = cv2.VideoCapture('input_video/bigbang_5s.mp4')  # input video
+def active_speaker(inputfile_name):
+    cap = cv2.VideoCapture(inputfile_name)  # input video
     detector = dlib.get_frontal_face_detector()  # frontal face detecting
     predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')  # face landmark data file
     profile_cascade = cv2.CascadeClassifier('data/haarcascade_profileface.xml')  # left-side face detecting
@@ -32,90 +32,96 @@ def active_speaker():
             print(self.x_coordinate, self.y_coordinate)
 
     while True:
-        _, frame = cap.read()  # read video
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # convert color to gray
-        flipped = cv2.flip(frame, 1)  # flip a frame horizontally
-        left_faces = profile_cascade.detectMultiScale(gray, 1.3, 5)  # detect left-side face
-        right_faces = profile_cascade.detectMultiScale(flipped, 1.3, 5)  # detect left-side face on horizontally flipped frame
+        ret, frame = cap.read()  # read video
+        if ret == True :
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # convert color to gray
+            flipped = cv2.flip(frame, 1)  # flip a frame horizontally
+            left_faces = profile_cascade.detectMultiScale(gray, 1.3, 5)  # detect left-side face
+            right_faces = profile_cascade.detectMultiScale(flipped, 1.3, 5)  # detect left-side face on horizontally flipped frame
 
-        faces = detector(gray)
-        for face in faces:  # face landmark
-            x1 = face.left()
-            y1 = face.top()
-            x2 = face.right()
-            y2 = face.bottom()  # 4 vertexes of a rectangle
+            faces = detector(gray)
+            for face in faces:  # face landmark
+                x1 = face.left()
+                y1 = face.top()
+                x2 = face.right()
+                y2 = face.bottom()  # 4 vertexes of a rectangle
 
-            landmarks = predictor(gray, face)
+                landmarks = predictor(gray, face)
 
-            for n in range(0, 68):
-                x = landmarks.part(n).x  # x coordinate of face landmark
-                y = landmarks.part(n).y  # y coordinate of face landmark
-                cv2.circle(frame, (x, y), 1, (255, 0, 0), -1)  # blue circles on face landmarks
+                for n in range(0, 68):
+                    x = landmarks.part(n).x  # x coordinate of face landmark
+                    y = landmarks.part(n).y  # y coordinate of face landmark
+                    cv2.circle(frame, (x, y), 1, (255, 0, 0), -1)  # blue circles on face landmarks
 
-            for m in range(0, len(faces)):
-                f = myFace()
-                numface.insert(m, f)  # insert class in list in sequence
-                numface[m].mouth_distance = (landmarks.part(66).y - landmarks.part(62).y) / (landmarks.part(8).y - landmarks.part(27).y) * 100
-                # mouth_distance = 윗입술~아랫입술 y좌표 차이 / 미간~턱 y좌표 차이
-                for (x, y, w, h) in left_faces:  # if it is left-side face
-                    numface[m].is_left = 1
-                    numface[m].is_right = 0
+                for m in range(0, len(faces)):
+                    f = myFace()
+                    numface.insert(m, f)  # insert class in list in sequence
+                    numface[m].mouth_distance = (landmarks.part(66).y - landmarks.part(62).y) / (landmarks.part(8).y - landmarks.part(27).y) * 100
+                    # mouth_distance = 윗입술~아랫입술 y좌표 차이 / 미간~턱 y좌표 차이
+                    for (x, y, w, h) in left_faces:  # if it is left-side face
+                        numface[m].is_left = 1
+                        numface[m].is_right = 0
 
-                for (x, y, w, h) in right_faces:  # if it is right-side face(left-side face in horizontally flipped frame)
-                    numface[m].is_right = 1
-                    numface[m].is_left = 0
+                    for (x, y, w, h) in right_faces:  # if it is right-side face(left-side face in horizontally flipped frame)
+                        numface[m].is_right = 1
+                        numface[m].is_left = 0
 
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 3)  # blue rectangle on faces if it's non-active speaker
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 3)  # blue rectangle on faces if it's non-active speaker
 
-                if abs(numface[m].mouth_distance - numface[m].mouth_distance_previous) <= 2.5:
-                    numface[m].x_coordinate = None
-                    numface[m].y_coordinate = None
-                    locxy = (None, None)
+                    if abs(numface[m].mouth_distance - numface[m].mouth_distance_previous) <= 2.5:
+                        numface[m].x_coordinate = None
+                        numface[m].y_coordinate = None
+                        locxy = (None, None)
 
-                maxi = 0
-                for i in range(0, len(numface)):
-                    if (numface[maxi].mouth_distance - numface[maxi].mouth_distance_previous) < (numface[i].mouth_distance - numface[i].mouth_distance_previous):
-                        maxi = i
-                    elif (numface[maxi].mouth_distance - numface[maxi].mouth_distance_previous) > (numface[i].mouth_distance - numface[i].mouth_distance_previous):
-                        maxi = maxi
+                    maxi = 0
+                    for i in range(0, len(numface)):
+                        if (numface[maxi].mouth_distance - numface[maxi].mouth_distance_previous) < (numface[i].mouth_distance - numface[i].mouth_distance_previous):
+                            maxi = i
+                        elif (numface[maxi].mouth_distance - numface[maxi].mouth_distance_previous) > (numface[i].mouth_distance - numface[i].mouth_distance_previous):
+                            maxi = maxi
+                        else:
+                            maxi = maxi
+
+                    if abs(numface[maxi].mouth_distance - numface[maxi].mouth_distance_previous) > 4:
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 3)  # red rectangle on faces if it's active speaker
+                        if numface[maxi].is_left == 1:
+                            cv2.circle(frame, (x1, y2), 7, (0, 255, 0), -1)  # green circle on left bottom of rectangle
+                            numface[maxi].x_coordinate = x1  # x coordinate of active speaker
+                            numface[maxi].y_coordinate = y2  # y coordinate of active speaker
+                            locxy = (numface[maxi].x_coordinate, numface[maxi].y_coordinate)  # xy coordinate of frame
+                        elif numface[maxi].is_right == 1:
+                            cv2.circle(frame, (x2, y2), 7, (0, 255, 0), -1)  # green circle on right bottom of rectangle
+                            numface[maxi].x_coordinate = x2  # x coordinate of active speaker
+                            numface[maxi].y_coordinate = y2  # y coordinate of active speaker
+                            locxy = (numface[maxi].x_coordinate, numface[maxi].y_coordinate)  # xy coordinate of frame
+                        else:
+                            cv2.circle(frame, (int((x1 + x2) / 2), y2), 7, (0, 255, 0), -1)  # green circle on middle of bottom of rectangle
+                            numface[maxi].x_coordinate = int((x1 + x2) / 2)  # x coordinate of active speaker
+                            numface[maxi].y_coordinate = y2  # y coordinate of active speaker
+                            locxy = (numface[maxi].x_coordinate, numface[maxi].y_coordinate)  # xy coordinate of frame
                     else:
-                        maxi = maxi
-
-                if abs(numface[maxi].mouth_distance - numface[maxi].mouth_distance_previous) > 4:
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 3)  # red rectangle on faces if it's active speaker
-                    if numface[maxi].is_left == 1:
-                        cv2.circle(frame, (x1, y2), 7, (0, 255, 0), -1)  # green circle on left bottom of rectangle
-                        numface[maxi].x_coordinate = x1  # x coordinate of active speaker
-                        numface[maxi].y_coordinate = y2  # y coordinate of active speaker
-                        locxy = (numface[maxi].x_coordinate, numface[maxi].y_coordinate)  # xy coordinate of frame
-                    elif numface[maxi].is_right == 1:
-                        cv2.circle(frame, (x2, y2), 7, (0, 255, 0), -1)  # green circle on right bottom of rectangle
-                        numface[maxi].x_coordinate = x2  # x coordinate of active speaker
-                        numface[maxi].y_coordinate = y2  # y coordinate of active speaker
-                        locxy = (numface[maxi].x_coordinate, numface[maxi].y_coordinate)  # xy coordinate of frame
-                    else:
-                        cv2.circle(frame, (int((x1 + x2) / 2), y2), 7, (0, 255, 0), -1)  # green circle on middle of bottom of rectangle
-                        numface[maxi].x_coordinate = int((x1 + x2) / 2)  # x coordinate of active speaker
-                        numface[maxi].y_coordinate = y2  # y coordinate of active speaker
-                        locxy = (numface[maxi].x_coordinate, numface[maxi].y_coordinate)  # xy coordinate of frame
-                else:
-                    numface[m].x_coordinate = None
-                    numface[m].y_coordinate = None
-                    locxy = (None, None)
+                        numface[m].x_coordinate = frame_width // 2 - 10
+                        numface[m].x_coordinate = frame_height - 50
+                        locxy = (numface[m].x_coordinate, numface[m].x_coordinate)
 
 
-        frame_x_y.insert(frame_number, locxy)
+            frame_x_y.insert(frame_number, locxy)
 
-        print(frame_x_y[frame_number], frame_number)
+            print(frame_x_y[frame_number], frame_number)
 
-        locxy = (None, None)
-        frame_number += 1
-        out.write(frame)
+            locxy = (None, None)
+            frame_number += 1
+            out.write(frame)
 
-        cv2.namedWindow('Test', cv2.WINDOW_NORMAL)  # adjust size of window(video)
-        cv2.imshow('Test', frame)
+            cv2.namedWindow('Test', cv2.WINDOW_NORMAL)  # adjust size of window(video)
+            cv2.imshow('Test', frame)
 
-        key = cv2.waitKey(1)
-        if key == 27:  # esc
+            key = cv2.waitKey(1)
+            if key == 27:  # esc
+                break
+        else:
             break
+            #key = cv2.waitKey(1)
+            #if key == 27:  # esc
+            #   break
     return frame_x_y
