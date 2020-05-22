@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import dlib
 
-def active_speaker(inputfile_name):
-    cap = cv2.VideoCapture(inputfile_name)  # input video
+def active_speaker():
+    cap = cv2.VideoCapture('input_video/bigbang_5s.mp4')  # input video
     detector = dlib.get_frontal_face_detector()  # frontal face detecting
     predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')  # face landmark data file
     profile_cascade = cv2.CascadeClassifier('data/haarcascade_profileface.xml')  # left-side face detecting
@@ -33,7 +33,7 @@ def active_speaker(inputfile_name):
 
     while True:
         ret, frame = cap.read()  # read video
-        if ret == True :
+        if ret is True:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # convert color to gray
             flipped = cv2.flip(frame, 1)  # flip a frame horizontally
             left_faces = profile_cascade.detectMultiScale(gray, 1.3, 5)  # detect left-side face
@@ -100,9 +100,9 @@ def active_speaker(inputfile_name):
                             numface[maxi].y_coordinate = y2  # y coordinate of active speaker
                             locxy = (numface[maxi].x_coordinate, numface[maxi].y_coordinate)  # xy coordinate of frame
                     else:
-                        numface[m].x_coordinate = frame_width // 2 - 10
-                        numface[m].x_coordinate = frame_height - 50
-                        locxy = (numface[m].x_coordinate, numface[m].x_coordinate)
+                        numface[m].x_coordinate = None
+                        numface[m].y_coordinate = None
+                        locxy = (None, None)
 
 
             frame_x_y.insert(frame_number, locxy)
@@ -121,7 +121,4 @@ def active_speaker(inputfile_name):
                 break
         else:
             break
-            #key = cv2.waitKey(1)
-            #if key == 27:  # esc
-            #   break
     return frame_x_y
