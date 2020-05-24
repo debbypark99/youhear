@@ -1,3 +1,4 @@
+import os
 import argparse
 # [video to text]
 import moviepy.editor as mp
@@ -209,6 +210,8 @@ def audio_analysis_main(inputfile_name):
         chunk.export(out_file, format="wav")
 
         audio_list.append(audio_analyze_sliced(out_file, i))
+
+        os.remove("split_audio_{}.wav".format(i))
 
     global total_duration
     print(total_duration)
