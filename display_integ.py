@@ -106,6 +106,7 @@ while (True):
                 continue
             print(int(total_duration + (segment.word_lst[0].start_time) * 0.03))
             seg_loc = loc[int(total_duration + (segment.word_lst[0].start_time)*0.03) + 15]
+
             x, y = seg_loc
             for i in range(0, len(segment.word_lst)):
                 #print("word_check")
@@ -130,27 +131,29 @@ while (True):
 
                     if (segment.word_lst[i].freq_s - segment.word_lst[i].freq_e) < -1 * freq_gap:
                         for num in range(0, len(segment.word_lst[i].text)):
-                            x += 20
-                            y -= 5
-                            if frame_width - 40 <= x:
-                                x -= 50
-                                y -= 20
+                            if frame_width - 100 <= x:
+                                x = seg_loc[0]
+                                y = seg_loc[1] - 40
                             draw.text((x, y), t[num], font=set_font, fill=(255, 255, 255, 0))
+                            x += 20
+                            y -= 10
                     elif (segment.word_lst[i].freq_s - segment.word_lst[i].freq_e) < freq_gap:
-                        for num in range(0, len(segment.word_lst[i].text)):
+                        #for num in range(0, len(segment.word_lst[i].text)):
+                        if frame_width - 100 <= x:
+                            x = seg_loc[0]
+                            y = seg_loc[1] - 40
+                        #draw.text((x, y), t[num], font=set_font, fill=(255, 255, 255, 0))
+                        draw.text((x, y), t, font=set_font, fill=(255, 255, 255, 0))
+                        for _ in range(len(t)):
                             x += 20
-                            if frame_width - 40 <= x:
-                                x -= 50
-                                y -= 20
-                            draw.text((x, y), t[num], font=set_font, fill=(255, 255, 255, 0))
                     else:
                         for num in range(0, len(segment.word_lst[i].text)):
-                            x += 20
-                            y += 5
                             if frame_width - 40 <= x:
                                 x -= 50
                                 y -= 20
                             draw.text((x, y), t[num], font=set_font, fill=(255, 255, 255, 0))
+                            x += 20
+                            y += 10
                     x += 30
             total_duration += segment.duration * 0.03
             print("total duration: ", total_duration)
