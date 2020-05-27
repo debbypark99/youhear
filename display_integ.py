@@ -5,28 +5,37 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 
 from face_integ import active_speaker
 import audio_integ
+from video_emotion_color_demo import emotion
 from PIL import ImageFont, ImageDraw, Image
 
 
 # [input video]
-inputfile_name = 'input_video/bigbang.mp4'
+inputfile_name = 'input_video/friends_wedding_15s.mp4'
 
 db_big = -18
 db_verybig = -13
 freq_gap = 12000
 
+emotion_lst = emotion(inputfile_name)
 audio_lst = audio_integ.audio_analysis_main(inputfile_name)
 loc = active_speaker(inputfile_name)
+
 print(len(loc))
-loc.append((0, 0))
-loc.append((0, 0))
-loc.append((0, 0))
-loc.append((0, 0))
-loc.append((0, 0))
+for _ in range(100):
+    loc.append((None, None))
+
+
 
 count = 0
 total_duration = 0
 t = ""
+
+#채용이가 바꾼코드1 - far 함수 정의
+def far(a, b):
+    if pow(a[0] - b[0], 2) + pow(a[1] - b[1], 2) > 10000:
+        return True
+    else:
+        return False
 
 #class info:
 #    text = ""
@@ -84,6 +93,9 @@ frame_height = int(cap.get(4))
 
 out = cv2.VideoWriter('output_video/bigbang_demo.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30,
                       (frame_width, frame_height))
+                      
+angry_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 20)
+sad_surprised_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 40)
 
 while (True):
     ret, frame = cap.read()
@@ -105,7 +117,10 @@ while (True):
                 total_duration += (segment.duration) * 0.03
                 continue
             print(int(total_duration + (segment.word_lst[0].start_time) * 0.03))
-            seg_loc = loc[int(total_duration + (segment.word_lst[0].start_time)*0.03) + 15]
+            if loc[int(total_duration + (segment.word_lst[0].start_time)*0.03) + 15] == (None,None):
+                seg_loc = (frame_width//2, frame_height-100)
+            else:
+                seg_loc = loc[int(total_duration + (segment.word_lst[0].start_time)*0.03) + 15]
 
             x, y = seg_loc
             for i in range(0, len(segment.word_lst)):
@@ -120,46 +135,73 @@ while (True):
                     #if word_lst[i].freq < word_lst[i-1].freq - 1:
                     #    t = t + "↘"
                     if segment.word_lst[i].dbfs > db_verybig:
-                        t = t + "↑↑↑"
+                        t = t + "↑↑"
                         set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 50)
                         t = t.upper()
                     elif segment.word_lst[i].dbfs > db_big:
-                        t = t + "↑↑"
+                        t = t + "↑"
                         set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 40)
                     else:
                         set_font = ImageFont.truetype("fonts/BMYEONSUNG.ttf", 30)
 
                     if (segment.word_lst[i].freq_s - segment.word_lst[i].freq_e) < -1 * freq_gap:
                         for num in range(0, len(segment.word_lst[i].text)):
-                            if frame_width - 100 <= x:
+                            if frame_width - 200 <= x:
                                 x = seg_loc[0]
-                                y = seg_loc[1] - 40
+                                y = seg_loc[1] + 40
+                            #채용이가 바꾼코드2 - far 함수 적용
+                            if loc[int(total_duration + (segment.word_lst[i].start_time + segment.word_lst[i].end_time)*0.015)] == (None,None):
+                                seg_loc = (frame_width//2, frame_height-100)
+                                x,y = seg_loc
+                            elif far(loc[int(total_duration + (segment.word_lst[i].start_time + segment.word_lst[i].end_time)*0.015)], seg_loc):
+                                seg_loc = loc[int(total_duration + (segment.word_lst[i].start_time + segment.word_lst[i].end_time)*0.015)]
+                                x,y = seg_loc
                             draw.text((x, y), t[num], font=set_font, fill=(255, 255, 255, 0))
                             x += 20
-                            y -= 10
+                            y += 10
                     elif (segment.word_lst[i].freq_s - segment.word_lst[i].freq_e) < freq_gap:
                         #for num in range(0, len(segment.word_lst[i].text)):
-                        if frame_width - 100 <= x:
+                        if frame_width - 200 <= x:
                             x = seg_loc[0]
-                            y = seg_loc[1] - 40
+                            y = seg_loc[1] + 40
+                        #채용이가 바꾼코드2 - far 함수 적용
+                        if loc[int(total_duration + (segment.word_lst[i].start_time + segment.word_lst[i].end_time)*0.015)] == (None,None):
+                            seg_loc = (frame_width//2, frame_height-100)
+                            x,y = seg_loc
+                        elif far(loc[int(total_duration + (segment.word_lst[i].start_time + segment.word_lst[i].end_time)*0.015)], seg_loc):
+                            seg_loc = loc[int(total_duration + (segment.word_lst[i].start_time + segment.word_lst[i].end_time)*0.015)]
+                            x,y = seg_loc
                         #draw.text((x, y), t[num], font=set_font, fill=(255, 255, 255, 0))
                         draw.text((x, y), t, font=set_font, fill=(255, 255, 255, 0))
                         for _ in range(len(t)):
                             x += 20
                     else:
                         for num in range(0, len(segment.word_lst[i].text)):
-                            if frame_width - 40 <= x:
-                                x -= 50
-                                y -= 20
+                            if frame_width - 200 <= x:
+                                x = seg_loc[0]
+                                y = seg_loc[1] + 40
+                            #채용이가 바꾼코드3 - far 함수 적용
+                            if loc[int(total_duration + (segment.word_lst[i].start_time + segment.word_lst[i].end_time)*0.015)] == (None,None):
+                                seg_loc = (frame_width//2, frame_height-100)
+                                x,y = seg_loc
+                            elif far(loc[int(total_duration + (segment.word_lst[i].start_time + segment.word_lst[i].end_time)*0.015)], seg_loc):
+                                seg_loc = loc[int(total_duration + (segment.word_lst[i].start_time + segment.word_lst[i].end_time)*0.015)]
+                                x,y = seg_loc
                             draw.text((x, y), t[num], font=set_font, fill=(255, 255, 255, 0))
                             x += 20
-                            y += 10
+                            y -= 10
                     x += 30
             total_duration += segment.duration * 0.03
             print("total duration: ", total_duration)
 
-
-
+        if emotion_lst[count][1] == 1:
+            draw.text(emotion_lst[count][2][0], "┛┗ \n┓┏", font=angry_font, fill=(255, 255, 255, 0))
+        elif emotion_lst[count][1] == 2:
+            draw.text(emotion_lst[count][2][0], "((\n ))\n((\n ))", font=sad_surprised_font, fill=(255, 255, 255, 0))
+            draw.text(emotion_lst[count][2][1], "((\n ))\n((\n ))", font=sad_surprised_font, fill=(255, 255, 255, 0))
+        elif emotion_lst[count][1] == 4:
+            draw.text(emotion_lst[count][2][0], "!", font=sad_surprised_font, fill=(255, 255, 255, 0))
+            draw.text(emotion_lst[count][2][1], "!", font=sad_surprised_font, fill=(255, 255, 255, 0))
         image = np.array(img_pil)
 
         out.write(image)
