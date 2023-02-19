@@ -1,5 +1,6 @@
 # youhear
 kinetic typographic subtitle for people with hearing loss
+https://noon-soybean-5df.notion.site/Creative-IT-Development-2-YouHear-0cc87494734c4004a418909e6f4bdc21
 
 ## Local 폴더와 연결하는 법
 > 1. 이거 다운받을 폴더를 하나 만들어준다.
